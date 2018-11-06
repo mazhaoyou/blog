@@ -25,12 +25,7 @@ router.get('/login', function (req, res, next) {
         user: req.session.user
     });
 });
-router.get('/register', function (req, res, next) {
-    res.render('register', {
-        message: '',
-        user: req.session.user
-    });
-});
+
 router.post('/login', function (req, res, next) {
     var name = req.body.name;
     var password = req.body.password;
@@ -53,6 +48,37 @@ router.post('/login', function (req, res, next) {
         req.session.user = user;
         res.redirect('/');
     });
+});
+router.get('/register', function (req, res, next) {
+    console.log("注册");
+    res.render('register', {
+        message: '',
+        user: req.session.user
+    });
+});
+router.post('/register', function (req, res, next) {
+    console.log("注册功能");
+    var name = req.body.name;
+    var password = req.body.password;
+    var hash = crypto.createHash('md5');
+    hash.update(password);
+    password = hash.digest('hex');
+    var query = 'INSERT author SET  authorName=' + mysql.escape(name) + ',authorPassword=' + mysql.escape(password);
+    if (password == '' || name == '') {
+        res.render('register', {
+            message: '用户名、密码不能为空'
+        });
+        return;
+    } else {
+        mysql.query(query, function (err, rows, fields) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            res.redirect('/login');
+        });
+    }
+
 });
 router.get('/articles/:articleID', function (req, res, next) {
     var articleID = req.params.articleID;
